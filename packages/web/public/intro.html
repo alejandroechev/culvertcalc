@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CulvertCalc — Culvert Hydraulics Guide</title>
+<style>
+  :root { --bg: #fff; --fg: #1a1a1a; --muted: #666; --border: #ddd; --card-bg: #f8f9fa; --accent: #2563eb; --eq-bg: #f1f5f9; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #1a1a2e; --fg: #e0e0e0; --muted: #999; --border: #333; --card-bg: #16213e; --accent: #60a5fa; --eq-bg: #1e293b; }
+  }
+  [data-theme="dark"] { --bg: #1a1a2e; --fg: #e0e0e0; --muted: #999; --border: #333; --card-bg: #16213e; --accent: #60a5fa; --eq-bg: #1e293b; }
+  [data-theme="light"] { --bg: #fff; --fg: #1a1a1a; --muted: #666; --border: #ddd; --card-bg: #f8f9fa; --accent: #2563eb; --eq-bg: #f1f5f9; }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--fg); line-height: 1.7; }
+  .container { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  .back-link { display: inline-block; margin-bottom: 1.5rem; color: var(--accent); text-decoration: none; font-size: 0.95rem; }
+  .back-link:hover { text-decoration: underline; }
+
+  .hero { text-align: center; padding: 3rem 0 2rem; border-bottom: 1px solid var(--border); margin-bottom: 2.5rem; }
+  .hero h1 { font-size: 2.4rem; margin-bottom: 0.5rem; }
+  .hero .tagline { font-size: 1.15rem; color: var(--muted); }
+
+  h2 { font-size: 1.5rem; margin: 2.5rem 0 1rem; padding-bottom: 0.4rem; border-bottom: 2px solid var(--accent); }
+  h3 { font-size: 1.15rem; margin: 1.5rem 0 0.5rem; }
+  p { margin-bottom: 1rem; }
+  ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+  li { margin-bottom: 0.4rem; }
+
+  .eq { background: var(--eq-bg); border-left: 3px solid var(--accent); padding: 0.75rem 1rem; margin: 0.75rem 0 1rem; font-family: 'Courier New', monospace; font-size: 0.95rem; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; }
+
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; }
+
+  .shapes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin: 1rem 0; }
+
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95rem; }
+  th, td { text-align: left; padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); }
+  th { font-weight: 600; background: var(--card-bg); }
+
+  .theme-toggle { position: fixed; top: 1rem; right: 1rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; cursor: pointer; font-size: 1.1rem; }
+
+  .steps ol { counter-reset: step; list-style: none; margin-left: 0; }
+  .steps ol li { counter-increment: step; padding-left: 2rem; position: relative; margin-bottom: 0.75rem; }
+  .steps ol li::before { content: counter(step); position: absolute; left: 0; width: 1.5rem; height: 1.5rem; background: var(--accent); color: #fff; border-radius: 50%; text-align: center; font-size: 0.85rem; line-height: 1.5rem; font-weight: 600; }
+
+  .ref-list { list-style: none; margin-left: 0; }
+  .ref-list li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+  .ref-list li:last-child { border-bottom: none; }
+</style>
+</head>
+<body>
+<button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙</button>
+
+<div class="container">
+  <a href="/" class="back-link">← Back to CulvertCalc</a>
+
+  <div class="hero">
+    <h1>🔧 CulvertCalc</h1>
+    <p class="tagline">Free, browser-based culvert hydraulics — powered by FHWA HDS-5</p>
+  </div>
+
+  <!-- 1. What is a Culvert? -->
+  <h2>What is a Culvert?</h2>
+  <p>A <strong>culvert</strong> is a hydraulic structure that conveys water under a roadway, railroad, trail, or embankment. Culverts are among the most common structures in transportation infrastructure — every road crossing a stream or drainage channel relies on one.</p>
+  <p>Proper culvert sizing is critical for two reasons:</p>
+  <ul>
+    <li><strong>Flood control</strong> — An undersized culvert backs up water (headwater) upstream, potentially flooding roads, properties, and infrastructure.</li>
+    <li><strong>Structural safety</strong> — Excessive headwater can overtop the embankment, leading to erosion, road washout, and catastrophic failure.</li>
+  </ul>
+  <p>Engineers must balance hydraulic capacity against cost: larger culverts pass more flow but cost more to install. The FHWA HDS-5 methodology provides the standard framework for this analysis in the United States.</p>
+
+  <!-- 2. Inlet vs Outlet Control -->
+  <h2>Inlet Control vs. Outlet Control</h2>
+  <p>The fundamental concept of culvert hydraulics is that flow is governed by one of two control sections — <strong>inlet control</strong> or <strong>outlet control</strong> — and the one producing the <em>higher headwater</em> controls the design.</p>
+
+  <div class="card">
+    <h3>Inlet Control</h3>
+    <p>Flow capacity is limited by the culvert entrance. The barrel has more capacity than the inlet can accept. Headwater depends on entrance geometry, not barrel length or roughness.</p>
+    <p>Two flow regimes exist:</p>
+    <ul>
+      <li><strong>Unsubmerged</strong> — The inlet is not fully covered by water. Flow enters like weir flow over the inlet edge. Headwater rises gradually with increasing flow.</li>
+      <li><strong>Submerged</strong> — The inlet is fully submerged (typically HW/D &gt; 1.2–1.5). Flow enters like orifice flow. Headwater rises more steeply with flow.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Outlet Control</h3>
+    <p>Flow capacity is limited by the barrel's ability to convey water. The full length of the culvert matters — friction losses through the barrel, plus entrance and exit losses, determine the required headwater.</p>
+    <p>Outlet control is more common in:</p>
+    <ul>
+      <li>Long culverts (high friction loss)</li>
+      <li>Rough barrels (high Manning's n)</li>
+      <li>High tailwater conditions</li>
+      <li>Culverts with efficient inlets (headwalls, beveled edges)</li>
+    </ul>
+  </div>
+
+  <p><strong>Design rule:</strong> Compute headwater for both inlet and outlet control. The <em>higher value</em> is the controlling headwater and governs the design.</p>
+
+  <!-- 3. Key Equations -->
+  <h2>Key Equations (FHWA HDS-5)</h2>
+  <p>All equations below are from the FHWA Hydraulic Design Series No. 5, a public-domain publication of the U.S. Federal Highway Administration.</p>
+
+  <h3>Inlet Control — Unsubmerged</h3>
+  <div class="eq">HW/D = Hc/D + K × (Q / (A × D<sup>0.5</sup>))<sup>M</sup> + Ks × S</div>
+  <p>Where <em>K</em> and <em>M</em> are empirical coefficients from HDS-5 tables based on culvert shape and inlet type, <em>Hc</em> is the critical depth, <em>Ks</em> is the slope correction factor (−0.5), and <em>S</em> is the culvert slope.</p>
+
+  <h3>Inlet Control — Submerged</h3>
+  <div class="eq">HW/D = c × (Q / (A × D<sup>0.5</sup>))<sup>2</sup> + Y + Ks × S</div>
+  <p>Where <em>c</em> and <em>Y</em> are empirical coefficients for the submerged regime. This equation applies when the headwater depth exceeds approximately 1.2–1.5 times the culvert rise.</p>
+
+  <h3>Outlet Control</h3>
+  <div class="eq">HW = H + ho − L × S
+
+where H = (Ke + 19.63 × n² × L / R<sup>1.33</sup> + 1) × V² / (2g)</div>
+  <p>The total head loss <em>H</em> includes entrance loss (<em>Ke × V²/2g</em>), friction loss through the barrel (Manning-based), and exit loss (<em>1.0 × V²/2g</em>). The term <em>ho</em> is the greater of tailwater depth or (dc + D)/2.</p>
+
+  <h3>Manning's Equation</h3>
+  <div class="eq">V = (1.49/n) × R<sup>2/3</sup> × S<sup>1/2</sup></div>
+  <p>Used to compute full-flow velocity in the barrel. <em>n</em> is Manning's roughness coefficient (material-dependent), <em>R</em> is the hydraulic radius (A/P), and <em>S</em> is the slope.</p>
+
+  <!-- 4. Key Concepts -->
+  <h2>Key Concepts</h2>
+
+  <table>
+    <tr><th>Concept</th><th>Description</th></tr>
+    <tr><td><strong>Headwater (HW)</strong></td><td>Depth of water at the upstream face of the culvert, measured from the invert. The primary design output.</td></tr>
+    <tr><td><strong>Tailwater (TW)</strong></td><td>Depth of water at the downstream end. Affects outlet control calculations.</td></tr>
+    <tr><td><strong>HW/D Ratio</strong></td><td>Headwater depth divided by culvert rise. HW/D &gt; 1.0 means water is above the crown. Design limit is often HW/D ≤ 1.2–1.5.</td></tr>
+    <tr><td><strong>Rating Curve</strong></td><td>A plot of discharge (Q) vs. headwater (HW) showing how the culvert performs across a range of flows.</td></tr>
+    <tr><td><strong>Inlet Configuration</strong></td><td>The physical shape of the entrance: projecting, mitered, headwall, or headwall with bevels. Better inlets reduce entrance losses.</td></tr>
+    <tr><td><strong>Shape Coefficients</strong></td><td>Empirical constants (K, M, c, Y) that depend on culvert shape and inlet type. Published in HDS-5 charts.</td></tr>
+    <tr><td><strong>Entrance Loss (Ke)</strong></td><td>Head loss at the culvert entrance due to flow contraction. Ranges from 0.2 (beveled) to 0.9 (projecting).</td></tr>
+  </table>
+
+  <!-- 5. Culvert Shapes -->
+  <h2>Culvert Shapes</h2>
+  <div class="shapes-grid">
+    <div class="card">
+      <h3>⭕ Circular</h3>
+      <p>Most common shape. Available in concrete, corrugated metal (CMP), HDPE, and PVC. Efficient hydraulically and easy to install. Used for most drainage crossings.</p>
+      <p><em>Sizes: 12″ to 120″+ diameter</em></p>
+    </div>
+    <div class="card">
+      <h3>▬ Rectangular (Box)</h3>
+      <p>Reinforced concrete box culverts. Used when vertical clearance is limited or when wide, shallow flow is needed. Common under major roadways. Can be multi-cell.</p>
+      <p><em>Typical: 3′×3′ to 12′×12′</em></p>
+    </div>
+    <div class="card">
+      <h3>⬭ Elliptical</h3>
+      <p>Used when vertical clearance is limited but a circular-like shape is desired. Available as horizontal ellipse (wider than tall) or vertical ellipse. Less common than circular.</p>
+      <p><em>Defined by span × rise</em></p>
+    </div>
+  </div>
+
+  <!-- 6. How to Use CulvertCalc -->
+  <h2>How to Use CulvertCalc</h2>
+  <div class="steps">
+    <ol>
+      <li><strong>Select culvert shape</strong> — Choose circular, rectangular, or elliptical and enter dimensions.</li>
+      <li><strong>Choose inlet type</strong> — Select the entrance configuration (projecting, mitered, headwall, or headwall with bevels).</li>
+      <li><strong>Select material</strong> — Pick the pipe material (concrete, CMP, HDPE, PVC) to set Manning's n automatically.</li>
+      <li><strong>Enter hydraulic data</strong> — Provide design flow (cfs), culvert length (ft), slope (ft/ft), and tailwater depth (ft).</li>
+      <li><strong>Click Calculate</strong> — CulvertCalc computes inlet control HW, outlet control HW, and identifies the controlling condition.</li>
+      <li><strong>Review the HW-Q chart</strong> — The rating curve shows headwater vs. discharge for both control types, highlighting your design point.</li>
+      <li><strong>Generate a report</strong> — Click 📄 Report for a print-ready summary with all inputs, results, and the rating curve.</li>
+    </ol>
+  </div>
+
+  <!-- 7. Glossary -->
+  <h2>Glossary</h2>
+  <table>
+    <tr><th>Term</th><th>Definition</th></tr>
+    <tr><td><strong>HW</strong></td><td>Headwater — water depth at the upstream face of the culvert, measured from the invert.</td></tr>
+    <tr><td><strong>TW</strong></td><td>Tailwater — water depth at the downstream end of the culvert.</td></tr>
+    <tr><td><strong>HW/D</strong></td><td>Headwater-to-rise ratio. Indicates how deep the upstream pool is relative to the culvert opening.</td></tr>
+    <tr><td><strong>D</strong></td><td>Rise (height) of the culvert. For circular pipes, D = diameter.</td></tr>
+    <tr><td><strong>Q</strong></td><td>Discharge — volumetric flow rate, typically in cubic feet per second (cfs).</td></tr>
+    <tr><td><strong>n</strong></td><td>Manning's roughness coefficient. Represents barrel friction: concrete ≈ 0.012, CMP ≈ 0.024, HDPE ≈ 0.012, PVC ≈ 0.010.</td></tr>
+    <tr><td><strong>Ke</strong></td><td>Entrance loss coefficient. Accounts for head loss due to flow contraction at the inlet.</td></tr>
+    <tr><td><strong>R</strong></td><td>Hydraulic radius = flow area / wetted perimeter (A/P). Governs friction loss.</td></tr>
+    <tr><td><strong>S</strong></td><td>Slope of the culvert barrel, expressed as ft/ft (dimensionless).</td></tr>
+    <tr><td><strong>Hc</strong></td><td>Critical depth — depth at which specific energy is minimized for a given discharge.</td></tr>
+    <tr><td><strong>K, M, c, Y</strong></td><td>HDS-5 empirical inlet coefficients that depend on culvert shape and inlet type.</td></tr>
+    <tr><td><strong>ho</strong></td><td>Outlet depth — the greater of tailwater or (dc + D)/2, used in outlet control.</td></tr>
+    <tr><td><strong>EUR</strong></td><td>Elevation of the upstream roadway — used to check if headwater would overtop the road.</td></tr>
+  </table>
+
+  <!-- 8. References -->
+  <h2>References</h2>
+  <ul class="ref-list">
+    <li>📘 <strong>FHWA HDS-5</strong> — <em>Hydraulic Design of Highway Culverts</em>, Third Edition (2012). Federal Highway Administration, U.S. Department of Transportation. Publication No. FHWA-HIF-12-026. <a href="https://www.fhwa.dot.gov/engineering/hydraulics/pubs/12026/hif12026.pdf" target="_blank" rel="noopener">PDF (public domain)</a></li>
+    <li>💻 <strong>HY-8</strong> — FHWA's culvert analysis software. CulvertCalc implements the same HDS-5 methodology in a modern browser-based interface. <a href="https://www.fhwa.dot.gov/engineering/hydraulics/software/hy8/" target="_blank" rel="noopener">FHWA HY-8 page</a></li>
+    <li>📐 <strong>Manning's Equation</strong> — Robert Manning (1891). Open-channel flow velocity formula used for barrel friction loss calculations.</li>
+    <li>📊 <strong>NOAA Atlas 14</strong> — Precipitation-frequency data used to determine design storm flows that feed into culvert analysis.</li>
+  </ul>
+
+  <p style="text-align:center; margin-top:3rem; color:var(--muted); font-size:0.9rem;">
+    CulvertCalc is free, open-source, and runs entirely in your browser. No data is sent to any server.
+  </p>
+</div>
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '🌙';
+}
+// Respect system preference on load
+if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+  document.documentElement.setAttribute('data-theme', 'dark');
+  document.getElementById('themeBtn').textContent = '☀️';
+}
+</script>
+</body>
+</html>

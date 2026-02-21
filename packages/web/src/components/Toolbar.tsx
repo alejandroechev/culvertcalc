@@ -14,6 +14,7 @@ export function Toolbar({ theme, onToggleTheme, onCalculate, onNew, onPrint }: P
         <button onClick={onNew}>New</button>
         <button className="primary" onClick={onCalculate}>Calculate</button>
         <button onClick={onPrint}>📄 Report</button>
+        <button onClick={() => window.open('/intro.html', '_blank')} title="Domain guide">📖 Guide</button>
         <button onClick={onToggleTheme}>{theme === 'light' ? '🌙' : '☀️'}</button>
       </div>
     </div>
