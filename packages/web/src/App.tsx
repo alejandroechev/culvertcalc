@@ -11,6 +11,7 @@ import { HWQChart } from './components/HWQChart';
 import { ResultsSummary } from './components/ResultsSummary';
 import { PrintReport } from './components/PrintReport';
 import { DEFAULT_FORM, type FormState } from './types';
+import { SAMPLES } from './samples';
 import './index.css';
 
 export function App() {
@@ -63,14 +64,21 @@ export function App() {
     }
   }, [form, buildDimensions]);
 
-  // Auto-calculate on mount
-  useEffect(() => { calculate(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // Auto-calculate on form change
+  useEffect(() => { calculate(); }, [calculate]);
 
   const handleNew = () => {
     setForm(DEFAULT_FORM);
     setResults(null);
     setError(null);
   };
+
+  const handleLoadSample = useCallback((id: string) => {
+    const sample = SAMPLES.find(s => s.id === id);
+    if (!sample) return;
+    setForm(sample.data);
+    setError(null);
+  }, []);
 
   return (
     <div className="app">
@@ -80,6 +88,7 @@ export function App() {
         onCalculate={calculate}
         onNew={handleNew}
         onPrint={() => window.print()}
+        onLoadSample={handleLoadSample}
       />
 
       {error && (
