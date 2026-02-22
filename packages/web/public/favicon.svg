@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Embankment -->
+  <polygon points="0,28 6,10 16,4 26,10 32,28" fill="#7a6e5e"/>
+  <!-- Pipe barrel (side view) -->
+  <rect x="4" y="18" width="24" height="10" rx="2" fill="#888"/>
+  <rect x="4" y="19" width="24" height="8" rx="1" fill="#aaa"/>
+  <!-- Pipe opening (left) -->
+  <ellipse cx="6" cy="23" rx="3.5" ry="5" fill="#666"/>
+  <ellipse cx="6" cy="23" rx="2.8" ry="4.2" fill="#333"/>
+  <!-- Water inside pipe -->
+  <ellipse cx="6" cy="25.5" rx="2.8" ry="2" fill="#4a9eed"/>
+  <!-- Water flowing out -->
+  <path d="M6,27.5 Q10,28.5 14,27 Q18,25.5 22,27 Q26,28.5 30,27" stroke="#4a9eed" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <!-- Pipe opening (right) -->
+  <ellipse cx="26" cy="23" rx="3.5" ry="5" fill="#666"/>
+  <ellipse cx="26" cy="23" rx="2.8" ry="4.2" fill="#555"/>
+  <!-- Water inside right opening -->
+  <ellipse cx="26" cy="25.5" rx="2.8" ry="2" fill="#4a9eed"/>
+</svg>
