@@ -4,16 +4,19 @@ interface Props {
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
   onNew: () => void;
+  onOpen: () => void;
+  onSave: () => void;
   onReport: () => void;
   onLoadSample: (id: string) => void;
 }
 
-export function Toolbar({ theme, onToggleTheme, onNew, onReport, onLoadSample }: Props) {
+export function Toolbar({ theme, onToggleTheme, onNew, onOpen, onSave, onReport, onLoadSample }: Props) {
   return (
     <div className="toolbar no-print">
       <h1>🔧 CulvertCalc</h1>
       <div className="toolbar-left">
         <button onClick={onNew}>New</button>
+        <button onClick={onOpen}>Open</button>
         <select
           value=""
           onChange={e => { if (e.target.value) onLoadSample(e.target.value); }}
@@ -24,6 +27,7 @@ export function Toolbar({ theme, onToggleTheme, onNew, onReport, onLoadSample }:
             <option key={s.id} value={s.id}>{s.name}</option>
           ))}
         </select>
+        <button onClick={onSave}>Save</button>
         <button onClick={onReport}>📄 Report</button>
       </div>
       <div className="toolbar-right">

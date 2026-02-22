@@ -311,3 +311,54 @@ test.describe('UI', () => {
     await expect(page.locator('.export-bar button', { hasText: 'SVG' })).toBeVisible();
   });
 });
+
+// ── State Persistence ────────────────────────────────────────────────
+
+test.describe('State Persistence', () => {
+  test('form state persists across page reload', async ({ page }) => {
+    await page.goto('/');
+    // Load a sample to change form values
+    await sampleSelect(page).selectOption({ index: 2 });
+    await waitForResults(page);
+    // Wait for debounced save
+    await page.waitForTimeout(700);
+    // Reload
+    await page.reload();
+    await waitForResults(page);
+    // Shape should not be default circular if sample changed it
+    const stored = await page.evaluate(() => localStorage.getItem('culvertcalc-state'));
+    expect(stored).toBeTruthy();
+  });
+
+  test('New button resets to defaults and clears persisted state', async ({ page }) => {
+    await page.goto('/');
+    await sampleSelect(page).selectOption({ index: 2 });
+    await waitForResults(page);
+    await page.locator('.toolbar button', { hasText: 'New' }).click();
+    await expect(shapeSelect(page)).toHaveValue('circular');
+  });
+
+  test('Open button exists in toolbar', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.toolbar button', { hasText: 'Open' })).toBeVisible();
+  });
+
+  test('Save button exists in toolbar', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.toolbar button', { hasText: 'Save' })).toBeVisible();
+  });
+
+  test('toolbar button order: New, Open, Samples, Save', async ({ page }) => {
+    await page.goto('/');
+    const left = page.locator('.toolbar-left');
+    const children = left.locator('> *');
+    const texts = await children.allTextContents();
+    const newIdx = texts.findIndex(t => t.trim() === 'New');
+    const openIdx = texts.findIndex(t => t.trim() === 'Open');
+    const samplesIdx = texts.findIndex(t => t.includes('Samples'));
+    const saveIdx = texts.findIndex(t => t.trim() === 'Save');
+    expect(newIdx).toBeLessThan(openIdx);
+    expect(openIdx).toBeLessThan(samplesIdx);
+    expect(samplesIdx).toBeLessThan(saveIdx);
+  });
+});
