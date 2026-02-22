@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <title>CulvertCalc — Culvert Hydraulics Calculator</title>
+  <script>
+    // Apply saved theme before first paint to prevent FOUC
+    try { var t = localStorage.getItem('culvertcalc-theme'); if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t); } catch(e) {}
+  </script>
 </head>
 <body>
   <div id="root"></div>
