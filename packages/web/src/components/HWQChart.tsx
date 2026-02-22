@@ -2,7 +2,9 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, ReferenceLine,
 } from 'recharts';
+import { useRef } from 'react';
 import type { RatingCurvePoint } from '@culvertcalc/engine';
+import { exportChartPNG, exportChartSVG } from './exportUtils';
 
 interface Props {
   data: RatingCurvePoint[];
@@ -10,12 +12,13 @@ interface Props {
 }
 
 export function HWQChart({ data, designQ }: Props) {
+  const chartRef = useRef<HTMLDivElement>(null);
   if (data.length === 0) return null;
 
   return (
     <div className="card">
       <h2>HW-Q Rating Curve</h2>
-      <div className="chart-container">
+      <div className="chart-container" ref={chartRef}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 5, right: 20, bottom: 20, left: 10 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -35,6 +38,10 @@ export function HWQChart({ data, designQ }: Props) {
               stroke="#198754" strokeWidth={3} dot={false} />
           </LineChart>
         </ResponsiveContainer>
+      </div>
+      <div className="export-bar">
+        <button onClick={() => chartRef.current && exportChartPNG(chartRef.current)}>📥 PNG</button>
+        <button onClick={() => chartRef.current && exportChartSVG(chartRef.current)}>📥 SVG</button>
       </div>
     </div>
   );

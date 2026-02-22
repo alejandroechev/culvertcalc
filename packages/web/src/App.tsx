@@ -9,14 +9,22 @@ import { Toolbar } from './components/Toolbar';
 import { InputForm } from './components/InputForm';
 import { HWQChart } from './components/HWQChart';
 import { ResultsSummary } from './components/ResultsSummary';
-import { PrintReport } from './components/PrintReport';
+import { openReport } from './components/openReport';
 import { DEFAULT_FORM, type FormState } from './types';
 import { SAMPLES } from './samples';
 import './index.css';
 
+function loadTheme(): 'light' | 'dark' {
+  try {
+    const stored = localStorage.getItem('culvertcalc-theme');
+    if (stored === 'dark' || stored === 'light') return stored;
+  } catch { /* ignore */ }
+  return 'light';
+}
+
 export function App() {
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [theme, setTheme] = useState<'light' | 'dark'>(loadTheme);
   const [results, setResults] = useState<{
     controlling: ControllingResult;
     inlet: InletControlResult;
@@ -28,6 +36,7 @@ export function App() {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
+    try { localStorage.setItem('culvertcalc-theme', theme); } catch { /* ignore */ }
   }, [theme]);
 
   const buildDimensions = useCallback((f: FormState): CulvertDimensions => {
@@ -80,14 +89,23 @@ export function App() {
     setError(null);
   }, []);
 
+  const handleReport = useCallback(() => {
+    if (!results) return;
+    openReport({
+      form,
+      controlling: results.controlling,
+      geometry: results.geometry,
+      curve: results.curve,
+    });
+  }, [form, results]);
+
   return (
     <div className="app">
       <Toolbar
         theme={theme}
         onToggleTheme={() => setTheme(t => t === 'light' ? 'dark' : 'light')}
-        onCalculate={calculate}
         onNew={handleNew}
-        onPrint={() => window.print()}
+        onReport={handleReport}
         onLoadSample={handleLoadSample}
       />
 
@@ -109,21 +127,13 @@ export function App() {
                 outlet={results.outlet}
                 geometry={results.geometry}
                 designQ={form.designQ}
+                curve={results.curve}
               />
               <HWQChart data={results.curve} designQ={form.designQ} />
             </>
           )}
         </div>
       </div>
-
-      {results && (
-        <PrintReport
-          form={form}
-          controlling={results.controlling}
-          geometry={results.geometry}
-          curve={results.curve}
-        />
-      )}
     </div>
   );
 }

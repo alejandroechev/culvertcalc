@@ -3,17 +3,16 @@ import { SAMPLES } from '../samples';
 interface Props {
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
-  onCalculate: () => void;
   onNew: () => void;
-  onPrint: () => void;
+  onReport: () => void;
   onLoadSample: (id: string) => void;
 }
 
-export function Toolbar({ theme, onToggleTheme, onCalculate, onNew, onPrint, onLoadSample }: Props) {
+export function Toolbar({ theme, onToggleTheme, onNew, onReport, onLoadSample }: Props) {
   return (
     <div className="toolbar no-print">
       <h1>🔧 CulvertCalc</h1>
-      <div className="toolbar-actions">
+      <div className="toolbar-left">
         <button onClick={onNew}>New</button>
         <select
           value=""
@@ -25,8 +24,9 @@ export function Toolbar({ theme, onToggleTheme, onCalculate, onNew, onPrint, onL
             <option key={s.id} value={s.id}>{s.name}</option>
           ))}
         </select>
-        <button className="primary" onClick={onCalculate}>Calculate</button>
-        <button onClick={onPrint}>📄 Report</button>
+        <button onClick={onReport}>📄 Report</button>
+      </div>
+      <div className="toolbar-right">
         <button onClick={() => window.open('/intro.html', '_blank')} title="Domain guide">📖 Guide</button>
         <button onClick={() => window.open('https://github.com/alejandroechev/culvertcalc/issues/new', '_blank')} title="Feedback">💬 Feedback</button>
         <button onClick={onToggleTheme}>{theme === 'light' ? '🌙' : '☀️'}</button>

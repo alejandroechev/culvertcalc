@@ -1,4 +1,5 @@
-import type { ControllingResult, InletControlResult, OutletControlResult, GeometryResult } from '@culvertcalc/engine';
+import type { ControllingResult, InletControlResult, OutletControlResult, GeometryResult, RatingCurvePoint } from '@culvertcalc/engine';
+import { exportResultsCSV } from './exportUtils';
 
 interface Props {
   controlling: ControllingResult;
@@ -6,9 +7,10 @@ interface Props {
   outlet: OutletControlResult;
   geometry: GeometryResult;
   designQ: number;
+  curve: RatingCurvePoint[];
 }
 
-export function ResultsSummary({ controlling, inlet, outlet, geometry, designQ }: Props) {
+export function ResultsSummary({ controlling, inlet, outlet, geometry, designQ, curve }: Props) {
   const outletVelocity = designQ / geometry.area;
 
   return (
@@ -43,6 +45,10 @@ export function ResultsSummary({ controlling, inlet, outlet, geometry, designQ }
       <div style={{ marginTop: 12, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
         <div>Inlet Control HW: {inlet.HW.toFixed(2)} ft ({inlet.regime})</div>
         <div>Outlet Control HW: {outlet.HW.toFixed(2)} ft</div>
+      </div>
+
+      <div className="export-bar">
+        <button onClick={() => exportResultsCSV(curve, designQ, controlling.HW, controlling.condition)}>📥 CSV</button>
       </div>
     </div>
   );

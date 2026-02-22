@@ -1,16 +1,11 @@
 import { test, expect, type Page } from '@playwright/test';
 
 // ── Selectors ────────────────────────────────────────────────────────
-// The shape select is inside .sidebar, the sample select is in .toolbar.
-// Labels aren't associated via for/id, so we locate inputs by their
-// parent .form-group which contains the label text.
-
 const shapeSelect = (p: Page) => p.locator('.sidebar select').first();
 const sampleSelect = (p: Page) => p.locator('.toolbar select');
 const fieldInput = (p: Page, label: string) =>
   p.locator('.form-group', { has: p.locator(`label:has-text("${label}")`) }).locator('input');
-const fieldSelect = (p: Page, label: string) =>
-  p.locator('.form-group', { has: p.locator(`label:has-text("${label}")`) }).locator('select');
+
 const hwValue = (p: Page) =>
   p.locator('.result-item', { hasText: 'Headwater' }).locator('.value');
 
@@ -30,14 +25,8 @@ test.describe('Core Workflow', () => {
   test('page loads with default circular culvert and auto-calculates', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('.toolbar h1')).toContainText('CulvertCalc');
-
-    // Shape defaults to circular
     await expect(shapeSelect(page)).toHaveValue('circular');
-
-    // Diameter field visible
     await expect(fieldInput(page, 'Diameter')).toBeVisible();
-
-    // Auto-calculation produces results
     await waitForResults(page);
   });
 
@@ -45,8 +34,6 @@ test.describe('Core Workflow', () => {
     await page.goto('/');
     const hw = await getHW(page);
     expect(hw).toBeGreaterThan(0);
-
-    // Chart card visible
     await expect(page.locator('h2', { hasText: 'HW-Q Rating Curve' })).toBeVisible();
     await expect(page.locator('.chart-container svg').first()).toBeVisible();
   });
@@ -127,6 +114,20 @@ test.describe('Samples', () => {
     }
   });
 
+  test('samples combobox loads correctly and populates form', async ({ page }) => {
+    await page.goto('/');
+    const sel = sampleSelect(page);
+    await expect(sel).toBeVisible();
+    // Load first sample and verify results update
+    await sel.selectOption({ index: 1 });
+    const hw = await getHW(page);
+    expect(hw).toBeGreaterThan(0);
+    // Load a different sample and verify results change
+    await sel.selectOption({ index: 3 });
+    const hw2 = await getHW(page);
+    expect(hw2).toBeGreaterThan(0);
+  });
+
   for (const [idx, name] of SAMPLE_NAMES.entries()) {
     test(`load sample "${name}" → results update`, async ({ page }) => {
       await page.goto('/');
@@ -203,13 +204,30 @@ test.describe('Results', () => {
     const text = await badge.textContent();
     expect(text).toMatch(/Inlet Control|Outlet Control/);
   });
+});
 
-  test('report section exists in DOM (print-only)', async ({ page }) => {
+// ── Report ───────────────────────────────────────────────────────────
+
+test.describe('Report', () => {
+  test('report opens in new tab with formatted content', async ({ page, context }) => {
     await page.goto('/');
     await waitForResults(page);
-    const report = page.locator('.print-report');
-    await expect(report).toBeAttached();
-    await expect(report.locator('h1')).toContainText('CulvertCalc');
+
+    const [newPage] = await Promise.all([
+      context.waitForEvent('page'),
+      page.locator('.toolbar button', { hasText: 'Report' }).click(),
+    ]);
+    await newPage.waitForLoadState();
+
+    await expect(newPage.locator('h1')).toContainText('CulvertCalc');
+    await expect(newPage.locator('body')).toContainText('Ctrl+P');
+    await expect(newPage.locator('body')).toContainText('Headwater');
+    // At least 2 tables: params + results (+ rating curve data)
+    const tableCount = await newPage.locator('table').count();
+    expect(tableCount).toBeGreaterThanOrEqual(2);
+    // Chart SVG should be present
+    await expect(newPage.locator('svg')).toBeVisible();
+    await newPage.close();
   });
 });
 
@@ -219,16 +237,47 @@ test.describe('UI', () => {
   test('theme toggle switches dark/light', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-    const themeBtn = page.locator('.toolbar button').last();
+    const themeBtn = page.locator('.toolbar-right button').last();
     await themeBtn.click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     await themeBtn.click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   });
 
+  test('theme persists in localStorage', async ({ page }) => {
+    await page.goto('/');
+    const themeBtn = page.locator('.toolbar-right button').last();
+    await themeBtn.click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+    // Reload and verify persisted
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  });
+
   test('Guide button exists in toolbar', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('.toolbar button', { hasText: 'Guide' })).toBeVisible();
+  });
+
+  test('toolbar layout: actions left, guide/feedback/theme right', async ({ page }) => {
+    await page.goto('/');
+    const left = page.locator('.toolbar-left');
+    const right = page.locator('.toolbar-right');
+    await expect(left).toBeVisible();
+    await expect(right).toBeVisible();
+    // Left has New, Samples, Report
+    await expect(left.locator('button', { hasText: 'New' })).toBeVisible();
+    await expect(left.locator('select')).toBeVisible();
+    await expect(left.locator('button', { hasText: 'Report' })).toBeVisible();
+    // Right has Guide, Feedback, Theme
+    await expect(right.locator('button', { hasText: 'Guide' })).toBeVisible();
+    await expect(right.locator('button', { hasText: 'Feedback' })).toBeVisible();
+  });
+
+  test('Calculate button is not present (auto-calculates)', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.toolbar button', { hasText: 'Calculate' })).not.toBeVisible();
   });
 
   test('New button resets form to defaults', async ({ page }) => {
@@ -247,5 +296,18 @@ test.describe('UI', () => {
     const columns = await grid.evaluate(el => getComputedStyle(el).gridTemplateColumns);
     const colCount = columns.split(' ').length;
     expect(colCount).toBe(1);
+  });
+
+  test('CSV export button visible on results', async ({ page }) => {
+    await page.goto('/');
+    await waitForResults(page);
+    await expect(page.locator('.export-bar button', { hasText: 'CSV' })).toBeVisible();
+  });
+
+  test('PNG and SVG export buttons visible on chart', async ({ page }) => {
+    await page.goto('/');
+    await waitForResults(page);
+    await expect(page.locator('.export-bar button', { hasText: 'PNG' })).toBeVisible();
+    await expect(page.locator('.export-bar button', { hasText: 'SVG' })).toBeVisible();
   });
 });
