@@ -28,6 +28,7 @@ export function Toolbar({ theme, onToggleTheme, onCalculate, onNew, onPrint, onL
         <button className="primary" onClick={onCalculate}>Calculate</button>
         <button onClick={onPrint}>📄 Report</button>
         <button onClick={() => window.open('/intro.html', '_blank')} title="Domain guide">📖 Guide</button>
+        <button onClick={() => window.open('https://github.com/alejandroechev/culvertcalc/issues/new', '_blank')} title="Feedback">💬 Feedback</button>
         <button onClick={onToggleTheme}>{theme === 'light' ? '🌙' : '☀️'}</button>
       </div>
     </div>
