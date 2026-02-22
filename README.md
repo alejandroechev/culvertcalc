@@ -2,7 +2,7 @@
 
 **Browser-based culvert hydraulics calculator — FHWA HDS-5 in your browser, no install required.**
 
-![CulvertCalc Screenshot](docs/screenshot.png) <!-- TODO: replace with actual screenshot -->
+![CulvertCalc Screenshot](docs/screenshot.png)
 
 ## What It Does
 
